@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from 'react';
 import { Upload, Users, AlertTriangle, TrendingUp, FileText, Award } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -7,13 +6,14 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 const FellowDashboard = () => {
-  const [data, setData] = useState<any[] | null>(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
 
     setLoading(true);
     setError(null);
@@ -35,7 +35,7 @@ const FellowDashboard = () => {
       }
 
       setData(parsedData);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -58,34 +58,19 @@ const FellowDashboard = () => {
 
     const allAreas = [...rubricAreas, ...stakeholderAreas];
 
-    type Fellow = {
-      name: string;
-      region: string;
-      school: string;
-      subject: string;
-      observer: string;
-      scores: number[];
-      warningCount: number;
-      warningDetails: string[];
-      sessionCount: number;
-      dominantMindset: string;
-      avgScore?: number;
-      riskLevel?: string;
-    };
-
-    const fellows: Record<string, Fellow> = {};
-    const observers: Record<string, number> = {};
-    const regions: Record<string, number> = {};
-    const holisticOutcomes: Record<string, number> = { 'Blank': 0 };
-    const leadershipMindsets: Record<string, number> = { 'Blank': 0 };
-    const scoreDistributions: Record<string, Record<number, number>> = {};
+    const fellows = {};
+    const observers = {};
+    const regions = {};
+    const holisticOutcomes = { 'Blank': 0 };
+    const leadershipMindsets = { 'Blank': 0 };
+    const scoreDistributions = {};
 
     // Initialize score distributions
     allAreas.forEach(area => {
       scoreDistributions[area] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     });
 
-    data.forEach((row: any) => {
+    data.forEach((row) => {
       const fellowName = row['Select Fellows Name'] || row['Fellow Name'] || row['Name'];
       const observer = row['Observer'] || row['Observer Name'];
       const region = row['Region'];
@@ -166,8 +151,8 @@ const FellowDashboard = () => {
       }
 
       // Analyze scores and build distributions
-      const sessionScores: number[] = [];
-      const warningAreas: string[] = [];
+      const sessionScores = [];
+      const warningAreas = [];
 
       allAreas.forEach(area => {
         const score = parseInt(row[area]);
@@ -191,7 +176,7 @@ const FellowDashboard = () => {
     });
 
     // Calculate final metrics
-    Object.values(fellows).forEach((fellow) => {
+    Object.values(fellows).forEach(fellow => {
       if (fellow.scores.length > 0) {
         fellow.avgScore = fellow.scores.reduce((sum, s) => sum + s, 0) / fellow.scores.length;
         const lowScores = fellow.scores.filter(s => s <= 2).length;
@@ -274,7 +259,7 @@ const FellowDashboard = () => {
                   <div>
                     <p className="text-sm text-gray-600">High Risk</p>
                     <p className="text-2xl font-bold text-red-600">
-                      {Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'High Risk').length}
+                      {Object.values(analysis.fellows).filter(f => f.riskLevel === 'High Risk').length}
                     </p>
                   </div>
                 </div>
@@ -286,7 +271,7 @@ const FellowDashboard = () => {
                   <div>
                     <p className="text-sm text-gray-600">Medium Risk</p>
                     <p className="text-2xl font-bold text-yellow-600">
-                      {Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'Medium Risk').length}
+                      {Object.values(analysis.fellows).filter(f => f.riskLevel === 'Medium Risk').length}
                     </p>
                   </div>
                 </div>
@@ -298,7 +283,7 @@ const FellowDashboard = () => {
                   <div>
                     <p className="text-sm text-gray-600">Low Risk</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'Low Risk').length}
+                      {Object.values(analysis.fellows).filter(f => f.riskLevel === 'Low Risk').length}
                     </p>
                   </div>
                 </div>
@@ -310,7 +295,7 @@ const FellowDashboard = () => {
                   <div>
                     <p className="text-sm text-gray-600">2+ Warnings</p>
                     <p className="text-2xl font-bold text-orange-600">
-                      {Object.values(analysis.fellows).filter((f: any) => f.warningCount >= 2).length}
+                      {Object.values(analysis.fellows).filter(f => f.warningCount >= 2).length}
                     </p>
                   </div>
                 </div>
@@ -337,7 +322,7 @@ const FellowDashboard = () => {
                 <div className="mb-8">
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Teaching Effectiveness Areas</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {analysis.rubricAreas.map((area: string, index: number) => (
+                    {analysis.rubricAreas.map((area, index) => (
                       <div key={index} className="bg-gray-50 rounded-lg p-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-3 text-center">{area}</h4>
                         <ResponsiveContainer width="100%" height={200}>
@@ -367,7 +352,7 @@ const FellowDashboard = () => {
                 <div>
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Stakeholder Engagement Areas</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {analysis.stakeholderAreas.map((area: string, index: number) => (
+                    {analysis.stakeholderAreas.map((area, index) => (
                       <div key={index} className="bg-gray-50 rounded-lg p-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-3 text-center">{area}</h4>
                         <ResponsiveContainer width="100%" height={200}>
@@ -463,9 +448,9 @@ const FellowDashboard = () => {
                   <PieChart>
                     <Pie
                       data={[
-                        { name: 'High Risk', value: Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'High Risk').length, fill: '#ef4444' },
-                        { name: 'Medium Risk', value: Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'Medium Risk').length, fill: '#f59e0b' },
-                        { name: 'Low Risk', value: Object.values(analysis.fellows).filter((f: any) => f.riskLevel === 'Low Risk').length, fill: '#10b981' }
+                        { name: 'High Risk', value: Object.values(analysis.fellows).filter(f => f.riskLevel === 'High Risk').length, fill: '#ef4444' },
+                        { name: 'Medium Risk', value: Object.values(analysis.fellows).filter(f => f.riskLevel === 'Medium Risk').length, fill: '#f59e0b' },
+                        { name: 'Low Risk', value: Object.values(analysis.fellows).filter(f => f.riskLevel === 'Low Risk').length, fill: '#10b981' }
                       ].filter(item => item.value > 0)}
                       cx="50%"
                       cy="50%"
@@ -524,7 +509,7 @@ const FellowDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.values(analysis.fellows).map((fellow: any, index: number) => (
+                    {Object.values(analysis.fellows).map((fellow, index) => (
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900">{fellow.name}</div>
@@ -566,7 +551,7 @@ const FellowDashboard = () => {
                                   <details className="cursor-pointer">
                                     <summary className="text-blue-600 hover:text-blue-800">Details</summary>
                                     <div className="mt-1 p-2 bg-gray-50 rounded text-xs max-w-xs">
-                                      {fellow.warningDetails.slice(0, 3).map((detail: string, idx: number) => (
+                                      {fellow.warningDetails.slice(0, 3).map((detail, idx) => (
                                         <div key={idx} className="mb-1">{detail}</div>
                                       ))}
                                       {fellow.warningDetails.length > 3 && (
@@ -601,4 +586,4 @@ const FellowDashboard = () => {
   );
 };
 
-export default FellowDashboard; 
+export default FellowDashboard;
