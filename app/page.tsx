@@ -6,9 +6,9 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 const FellowDashboard = () => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -36,7 +36,7 @@ const FellowDashboard = () => {
 
       setData(parsedData);
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -58,12 +58,12 @@ const FellowDashboard = () => {
 
     const allAreas = [...rubricAreas, ...stakeholderAreas];
 
-    const fellows = {};
-    const observers = {};
-    const regions = {};
-    const holisticOutcomes = { 'Blank': 0 };
-    const leadershipMindsets = { 'Blank': 0 };
-    const scoreDistributions = {};
+    const fellows: { [key: string]: any } = {};
+    const observers: { [key: string]: number } = {};
+    const regions: { [key: string]: number } = {};
+    const holisticOutcomes: { [key: string]: number } = { 'Blank': 0 };
+    const leadershipMindsets: { [key: string]: number } = { 'Blank': 0 };
+    const scoreDistributions: { [key: string]: { [score: number]: number } } = {};
 
     // Initialize score distributions
     allAreas.forEach(area => {
@@ -151,8 +151,8 @@ const FellowDashboard = () => {
       }
 
       // Analyze scores and build distributions
-      const sessionScores = [];
-      const warningAreas = [];
+      const sessionScores: number[] = [];
+      const warningAreas: string[] = [];
 
       allAreas.forEach(area => {
         const score = parseInt(row[area]);
@@ -178,8 +178,8 @@ const FellowDashboard = () => {
     // Calculate final metrics
     Object.values(fellows).forEach(fellow => {
       if (fellow.scores.length > 0) {
-        fellow.avgScore = fellow.scores.reduce((sum, s) => sum + s, 0) / fellow.scores.length;
-        const lowScores = fellow.scores.filter(s => s <= 2).length;
+        fellow.avgScore = fellow.scores.reduce((sum: number, s: number) => sum + s, 0) / fellow.scores.length;
+        const lowScores = fellow.scores.filter((s: number) => s <= 2).length;
         const lowScorePercent = (lowScores / fellow.scores.length) * 100;
         fellow.riskLevel = lowScorePercent > 40 ? 'High Risk' : 
                           lowScorePercent > 20 ? 'Medium Risk' : 'Low Risk';
@@ -551,7 +551,7 @@ const FellowDashboard = () => {
                                   <details className="cursor-pointer">
                                     <summary className="text-blue-600 hover:text-blue-800">Details</summary>
                                     <div className="mt-1 p-2 bg-gray-50 rounded text-xs max-w-xs">
-                                      {fellow.warningDetails.slice(0, 3).map((detail, idx) => (
+                                      {fellow.warningDetails.slice(0, 3).map((detail: string, idx: number) => (
                                         <div key={idx} className="mb-1">{detail}</div>
                                       ))}
                                       {fellow.warningDetails.length > 3 && (
